@@ -5,7 +5,8 @@ package lab.db.tables;
  import java.sql.ResultSet;
  import java.sql.Statement;
  import java.sql.SQLException;
- import java.util.Date;
+import java.util.ArrayList;
+import java.util.Date;
  import java.util.List;
  import java.util.Objects;
  import java.util.Optional;
@@ -64,7 +65,23 @@ package lab.db.tables;
       * @return a List of all the students in the ResultSet
       */
      private List<Student> readStudentsFromResultSet(final ResultSet resultSet) {
-         // Create an empty list, then
+    	 List<Student> studentList = new ArrayList<>();
+    	 
+    	 try {
+			while(resultSet.next()) {
+				int id;
+				String firstName;
+				String lastName;
+				Student student = new Student(id, firstName, lastName);
+				
+				studentList.add(student);
+			 }
+			return studentList;
+		} catch (final SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+    	 // Create an empty list, then
          // Inside a loop you should:
          //      1. Call resultSet.next() to advance the pointer and check there are still rows to fetch
          //      2. Use the getter methods to get the value of the columns
@@ -75,12 +92,17 @@ package lab.db.tables;
          // Helpful resources:
          // https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html
          // https://docs.oracle.com/javase/tutorial/jdbc/basics/retrieving.html
-         throw new UnsupportedOperationException("TODO");
      }
 
      @Override
      public List<Student> findAll() {
-         throw new UnsupportedOperationException("TODO");
+         final String query = "SELECT * FROM " + TABLE_NAME;
+         try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+        	 final ResultSet resultSet = statement.executeQuery();
+        	 return readStudentsFromResultSet(resultSet);
+         }catch (final SQLException e) {
+        	 return null;
+         }
      }
 
      public List<Student> findByBirthday(final Date date) {
