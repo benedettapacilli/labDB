@@ -127,9 +127,9 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 	@Override
 	public boolean save(final Student student) {
-		final String query = "INSERT INTO " + TABLE_NAME + " VALUE (" + student + ")";
-		try (final Statement statement = this.connection.createStatement()) {
-			statement.executeUpdate(query);
+		final String query = "INSERT INTO " + TABLE_NAME + " VALUE (?, ?, ?, ?)";
+		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+			//TODO
 			return true;
 		} catch (final SQLException e) {
 			return false;
@@ -138,7 +138,7 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 	@Override
 	public boolean delete(final Integer id) {
-		final String query = "SELECT * FROM " + TABLE_NAME + "WHERE is = ?";
+		final String query = "DELETE FROM " + TABLE_NAME +  "WHERE id = ?";
 		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
 			statement.setInt(1, id);
 			final ResultSet resultSet = statement.executeQuery();
@@ -152,6 +152,15 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 	@Override
 	public boolean update(final Student student) {
-		throw new UnsupportedOperationException("TODO");
+		final String query = "SELECT * FROM " + TABLE_NAME + "WHERE id = ?";
+		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+			statement.setInt(1, student.getId());
+			final ResultSet resultSet = statement.executeQuery();
+			
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 }
