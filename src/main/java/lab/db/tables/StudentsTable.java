@@ -13,6 +13,7 @@ import java.util.Date;
 
  import lab.db.Table;
  import lab.model.Student;
+import lab.utils.Utils;
 
  public final class StudentsTable implements Table<Student, Integer> {    
      public static final String TABLE_NAME = "students";
@@ -106,7 +107,14 @@ import java.util.Date;
      }
 
      public List<Student> findByBirthday(final Date date) {
-         throw new UnsupportedOperationException("TODO");
+    	 final String query = "SELECT * FROM " + TABLE_NAME + "wHERE date = ?";
+         try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+        	 statement.setDate(1, Utils.dateToSqlDate(date));
+        	 final ResultSet resultSet = statement.executeQuery();
+        	 return readStudentsFromResultSet(resultSet);
+         }catch (final SQLException e) {
+        	 return null;
+         }
      }
 
      @Override
