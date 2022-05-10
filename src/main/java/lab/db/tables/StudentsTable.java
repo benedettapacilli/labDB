@@ -138,7 +138,16 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 	@Override
 	public boolean delete(final Integer id) {
-		throw new UnsupportedOperationException("TODO");
+		final String query = "SELECT * FROM " + TABLE_NAME + "WHERE is = ?";
+		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+			statement.setInt(1, id);
+			final ResultSet resultSet = statement.executeQuery();
+			readStudentsFromResultSet(resultSet);
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
