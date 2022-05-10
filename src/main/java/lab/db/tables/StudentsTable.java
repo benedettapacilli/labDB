@@ -119,7 +119,13 @@ import lab.utils.Utils;
 
      @Override
      public boolean dropTable() {
-         throw new UnsupportedOperationException("TODO");
+    	 final String query = "DROP TABLE" + TABLE_NAME ;
+    	 try(final PreparedStatement statement = this.connection.prepareStatement(query)) {
+    		 final ResultSet resultSet = statement.executeQuery();
+    		 return readStudentsFromResultSet(resultSet).isEmpty();
+    	 } catch(final SQLException e) {
+    		 return false;
+    	 }
      }
 
      @Override
