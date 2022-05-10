@@ -5,14 +5,11 @@ package lab.db.tables;
  import java.sql.ResultSet;
  import java.sql.Statement;
  import java.sql.SQLException;
- import java.sql.SQLIntegrityConstraintViolationException;
- import java.util.ArrayList;
  import java.util.Date;
  import java.util.List;
  import java.util.Objects;
  import java.util.Optional;
 
- import lab.utils.Utils;
  import lab.db.Table;
  import lab.model.Student;
 
@@ -51,7 +48,14 @@ package lab.db.tables;
 
      @Override
      public Optional<Student> findByPrimaryKey(final Integer id) {
-         throw new UnsupportedOperationException("TODO");
+    	 final String query = "SELECT * FROM " + TABLE_NAME + "wHERE id = ?";
+         try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
+        	 statement.setInt(1, id);
+        	 final ResultSet resultSet = statement.executeQuery();
+        	 return readStudentsFromResultSet(resultSet).stream().findFirst();
+         }catch (final SQLException e) {
+        	 return Optional.empty();
+         }
      }
 
      /**
