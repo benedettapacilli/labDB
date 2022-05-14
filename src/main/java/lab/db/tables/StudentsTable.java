@@ -96,8 +96,8 @@ public final class StudentsTable implements Table<Student, Integer> {
 	@Override
 	public List<Student> findAll() {
 		final String query = "SELECT * FROM " + TABLE_NAME;
-		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
-			final ResultSet resultSet = statement.executeQuery();
+		try (final Statement statement = this.connection.createStatement()) {
+			final ResultSet resultSet = statement.executeQuery(query);
 			return readStudentsFromResultSet(resultSet);
 		} catch (final SQLException e) {
 			return null;
