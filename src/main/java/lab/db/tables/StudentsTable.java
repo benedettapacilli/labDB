@@ -66,18 +66,19 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 		try {
 			while (resultSet.next()) {
-				int id;
-				String firstName;
-				String lastName;
-				Student student = new Student(id, firstName, lastName);
+				final int id = resultSet.getInt("id");
+                final String firstName = resultSet.getString("firstName");
+                final String lastName = resultSet.getString("lastName");
+                final Optional<Date> birthday = Optional.ofNullable(Utils.sqlDateToDate(resultSet.getDate("birthday")));
+				Student student = new Student(id, firstName, lastName, birthday);
 
 				studentList.add(student);
 			}
-			return studentList;
 		} catch (final SQLException e) {
 			e.printStackTrace();
-			return null;
 		}
+		
+		return studentList;
 		// Create an empty list, then
 		// Inside a loop you should:
 		// 1. Call resultSet.next() to advance the pointer and check there are still
