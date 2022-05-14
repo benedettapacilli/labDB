@@ -5,11 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.swing.plaf.basic.BasicGraphicsUtils;
 
 import lab.db.Table;
 import lab.model.Student;
@@ -128,10 +131,16 @@ public final class StudentsTable implements Table<Student, Integer> {
 
 	@Override
 	public boolean save(final Student student) {
-		final String query = "INSERT INTO " + TABLE_NAME + " VALUE (?, ?, ?, ?)";
+		final String query = "INSERT INTO " + TABLE_NAME + "(id, firstName, lastName, birthday) VALUES (?, ?, ?, ?)";
 		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
-			//TODO
+			statement.setInt(1, student.getId());
+            statement.setString(2, student.getFirstName());
+            statement.setString(3, student.getLastName());
+            statement.setDate(4, student.getBirthday().map(birthday -> Utils.dateToSqlDate(birthday)).orElse(null));
+            statement.executeUpdate();
 			return true;
+		} catch (final SQLIntegrityConstraintViolationException e) {
+            return false;
 		} catch (final SQLException e) {
 			return false;
 		}
