@@ -70,17 +70,18 @@ public final class StudentsTable implements Table<Student, Integer> {
 		try {
 			while (resultSet.next()) {
 				final int id = resultSet.getInt("id");
-                final String firstName = resultSet.getString("firstName");
-                final String lastName = resultSet.getString("lastName");
-                final Optional<Date> birthday = Optional.ofNullable(Utils.sqlDateToDate(resultSet.getDate("birthday")));
+				final String firstName = resultSet.getString("firstName");
+				final String lastName = resultSet.getString("lastName");
+				final Optional<Date> birthday = Optional.ofNullable(Utils.sqlDateToDate(resultSet.getDate("birthday")));
 				Student student = new Student(id, firstName, lastName, birthday);
 
 				studentList.add(student);
 			}
 		} catch (final SQLException e) {
 			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
-		
+
 		return studentList;
 		// Create an empty list, then
 		// Inside a loop you should:
@@ -103,7 +104,8 @@ public final class StudentsTable implements Table<Student, Integer> {
 			final ResultSet resultSet = statement.executeQuery(query);
 			return readStudentsFromResultSet(resultSet);
 		} catch (final SQLException e) {
-			return null;
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -114,7 +116,8 @@ public final class StudentsTable implements Table<Student, Integer> {
 			final ResultSet resultSet = statement.executeQuery();
 			return readStudentsFromResultSet(resultSet);
 		} catch (final SQLException e) {
-			return null;
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -125,7 +128,8 @@ public final class StudentsTable implements Table<Student, Integer> {
 			statement.executeUpdate(query);
 			return true;
 		} catch (final SQLException e) {
-			return false;
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -134,43 +138,44 @@ public final class StudentsTable implements Table<Student, Integer> {
 		final String query = "INSERT INTO " + TABLE_NAME + "(id, firstName, lastName, birthday) VALUES (?, ?, ?, ?)";
 		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
 			statement.setInt(1, student.getId());
-            statement.setString(2, student.getFirstName());
-            statement.setString(3, student.getLastName());
-            statement.setDate(4, student.getBirthday().map(birthday -> Utils.dateToSqlDate(birthday)).orElse(null));
-            statement.executeUpdate();
+			statement.setString(2, student.getFirstName());
+			statement.setString(3, student.getLastName());
+			statement.setDate(4, student.getBirthday().map(birthday -> Utils.dateToSqlDate(birthday)).orElse(null));
+			statement.executeUpdate();
 			return true;
 		} catch (final SQLIntegrityConstraintViolationException e) {
-            return false;
-		} catch (final SQLException e) {
 			return false;
+		} catch (final SQLException e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
 	public boolean delete(final Integer id) {
-		final String query = "DELETE FROM " + TABLE_NAME +  "WHERE id = ?";
+		final String query = "DELETE FROM " + TABLE_NAME + "WHERE id = ?";
 		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
 			statement.setInt(1, id);
-			final ResultSet resultSet = statement.executeQuery();
-			readStudentsFromResultSet(resultSet);
-			return true;
+			return statement.executeUpdate() > 0;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return false;
+			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
 	public boolean update(final Student student) {
-		final String query = "SELECT * FROM " + TABLE_NAME + "WHERE id = ?";
+		final String query = "UPDATE " + TABLE_NAME + " SET " + "firstName = ?," + "lastName = ?," + "birthday = ? "
+				+ "WHERE id = ?";
 		try (final PreparedStatement statement = this.connection.prepareStatement(query)) {
-			statement.setInt(1, student.getId());
-			final ResultSet resultSet = statement.executeQuery();
-			
-			return true;
-		} catch (SQLException e) {
+			statement.setString(1, student.getFirstName());
+			statement.setString(2, student.getLastName());
+			statement.setDate(3, student.getBirthday().map(birthday -> Utils.dateToSqlDate(birthday)).orElse(null));
+			statement.setInt(4, student.getId());
+			return statement.executeUpdate() > 0;
+		} catch (final SQLException e) {
 			e.printStackTrace();
-			return false;
+			throw new IllegalStateException(e);
 		}
 	}
 }
